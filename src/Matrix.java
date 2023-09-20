@@ -87,6 +87,18 @@ public class Matrix {
         return result;
     }
 
+    public boolean equals(Matrix other){
+        if((this.rows() != other.rows()) || (this.cols() != other.cols()))
+            return false;
+        for(int i=0; i<this.rows(); i++){
+            for(int j=0; j<this.rows(); j++){
+                if(this.get(i, j) != other.get(i, j))
+                    return false;
+            }
+        }
+        return true;
+    }
+
     public String toString(){
         String result = "";
         for(int i=0; i<rows; i++){

@@ -4,22 +4,23 @@ import java.io.FileNotFoundException;
 
 public class MatrixMultiplication {
     public static void main(String[] args){
-        Matrix a, b, c1, c2;
+        testFile(new File("../test/1.txt"));
+    }
 
-        File file = new File("../test/1.txt");
+    public static void testFile(File f){
         try {
-            Scanner in = new Scanner(file);
+            Scanner in = new Scanner(f);
         
             int size = in.nextInt();
 
-            a = new Matrix(size);
+            Matrix a = new Matrix(size);
             for(int i=0; i<size; i++){
                 for(int j=0; j<size; j++){
                     a.set(i, j, in.nextInt());
                 }
             }
 
-            b = new Matrix(size);
+            Matrix b = new Matrix(size);
             for(int i=0; i<size; i++){
                 for(int j=0; j<size; j++){
                     b.set(i, j, in.nextInt());
@@ -28,21 +29,34 @@ public class MatrixMultiplication {
 
             in.close();
 
-            c1 = multiplyDirect(a, b);
-            c2 = multiplyStrassen(a, b);
+            Matrix c1 = multiplyDirect(a, b);
+            Matrix c2 = multiplyStrassen(a, b);
 
-            System.out.println("Direct:\n" + c1);
+            try {
+                assert(c1.equals(c2));
+            } catch(AssertionError ae) {
+                System.out.println("Error: Strassen incorrect for...");
+                System.out.println("A:\n" + a);
+                System.out.println("B:\n" + b);
+                System.out.println("Direct:\n" + c1);
+                System.out.println("Strassen:\n" + c2);
 
-            System.out.println("Strassen:\n" + c2);
+            }
             
-            // System.out.println("a11:\n" + a.partition(0, a.rows()/2, 0, a.cols()/2));
-            // System.out.println("a12:\n" + a.partition(0, a.rows()/2, a.cols()/2, a.cols()));
-            // System.out.println("a21:\n" + a.partition(a.rows()/2, a.rows(), 0, a.cols()/2));
-            // System.out.println("a22:\n" + a.partition(a.rows()/2, a.rows(), a.cols()/2, a.cols()));
-
         } catch(FileNotFoundException ex){
-            System.out.println("File not found");
+            System.out.println("Error: File not found");
         }
+    }
+
+    public static void testDirectory(File dir){
+        File[] directoryListing = dir.listFiles();
+        if(directoryListing != null){
+            for(File child : directoryListing){
+                testDirectory(child);
+            }
+        }
+        else
+            testFile(dir);
     }
 
     public static Matrix add(Matrix a, Matrix b){
