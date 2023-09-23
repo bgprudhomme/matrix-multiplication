@@ -11,7 +11,7 @@ public class MatrixRandGen {
         int min = -100;
         int max = 100;
 
-        int[] sizes = {2};
+        int[] sizes = {2, 4, 8, 16, 32, 64, 128, 256, 512, 1024};
 
         for(int s : sizes){
             try {

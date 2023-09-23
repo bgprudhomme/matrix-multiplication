@@ -3,11 +3,31 @@ import java.util.Scanner;
 import java.io.FileNotFoundException;
 
 public class MatrixMultiplication {
+
+    public static int mults;
+    public static int adds;
     public static void main(String[] args){
-  
+        // System.out.print("Input: (T)ype or get from (F)ile? ");
+        // Scanner in = new Scanner(System.in);
+
+        // if(in.next().charAt(0) == 'T') {
+
+        // }
+        // else {
+        //     System.out.print("Pathname: ");
+        //     testFile(new File(in.next()));
+        // }
+
+        int[] sizes = {1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024};
+
+        for(int size : sizes){
+            System.out.println("Size: " + size + "x" + size);
+            testPerformance(new File("../test/" + size + "x" + size + "/all1s.txt"));
+        }
+
     }
 
-    public static void testFile(File f){
+    public static void testPerformance(File f){
         try {
             Scanner in = new Scanner(f);
         
@@ -29,11 +49,21 @@ public class MatrixMultiplication {
 
             in.close();
 
+            mults = 0;
+            adds = 0;
             Matrix c1 = multiplyDirect(a, b);
+            System.out.println("Direct: " + adds + " additions, " + mults + " multiplications");
+            
+            mults = 0;
+            adds = 0;
             Matrix c2 = multiplyStrassen(a, b);
+            System.out.println("Strassen: " + adds + " additions, " + mults + " multiplications");
 
             try {
                 assert(c1.equals(c2));
+
+
+
             } catch(AssertionError ae) {
                 System.out.println("Error: Strassen incorrect for...");
                 System.out.println("A:\n" + a);
@@ -43,7 +73,7 @@ public class MatrixMultiplication {
 
             }
 
-            System.out.println("Checked " + f);
+            // System.out.println("Checked " + f);
             
         } catch(FileNotFoundException ex){
             System.out.println("Error: File not found");
@@ -59,7 +89,7 @@ public class MatrixMultiplication {
             }
         }
         else
-            testFile(dir);
+            testPerformance(dir);
     }
 
     public static Matrix add(Matrix a, Matrix b){
@@ -67,6 +97,7 @@ public class MatrixMultiplication {
         for(int i=0; i<a.rows(); i++){
             for(int j=0; j<b.cols(); j++){
                 c.set(i, j, a.get(i, j) + b.get(i, j));
+                adds++;
             }
         }
         return c;
@@ -77,6 +108,7 @@ public class MatrixMultiplication {
         for(int i=0; i<a.rows(); i++){
             for(int j=0; j<b.cols(); j++){
                 c.set(i, j, a.get(i, j) - b.get(i, j));
+                adds++;
             }
         }
         return c;
@@ -84,11 +116,14 @@ public class MatrixMultiplication {
 
     public static Matrix multiplyDirect(Matrix a, Matrix b){
         Matrix c = new Matrix(a.rows(), b.cols());
-
         for(int i=0; i<a.rows(); i++){
             for(int j=0; j<b.cols(); j++){
-                for(int k=0; k<a.cols(); k++){
+                    c.set(i, j, a.get(i, 0)*b.get(0, j));
+                    mults++;
+                for(int k=1; k<a.cols(); k++){
                     c.add(i, j, a.get(i, k)*b.get(k, j));
+                    adds++;
+                    mults++;
                 }
             }
         }
@@ -98,7 +133,8 @@ public class MatrixMultiplication {
     public static Matrix multiplyStrassen(Matrix a, Matrix b){
         Matrix c = new Matrix(a.rows(), a.cols());
         if(a.rows() == 1){
-            c.add(0, 0, a.get(0, 0) * b.get(0, 0));
+            c.set(0, 0, a.get(0, 0) * b.get(0, 0));
+            mults++;
         }
         else {
             // Step 1
@@ -138,10 +174,10 @@ public class MatrixMultiplication {
             Matrix p7 = multiplyStrassen(s9, s10);
 
             // Step 4
-            c11 = add(subtract(add(add(c11, p5), p4), p2), p6);
-            c12 = add(add(c12, p1), p2);
-            c21 = add(add(c21, p3), p4);
-            c22 = subtract(subtract(add(add(c22, p5), p1), p3), p7);
+            c11 = add(subtract(add(p5, p4), p2), p6);
+            c12 = add(p1, p2);
+            c21 = add(p3, p4);
+            c22 = subtract(subtract(add(p5, p1), p3), p7);
 
             c = new Matrix(c11, c12, c21, c22);
 
