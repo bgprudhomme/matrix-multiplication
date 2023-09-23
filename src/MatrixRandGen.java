@@ -11,7 +11,7 @@ public class MatrixRandGen {
         int min = -100;
         int max = 100;
 
-        int[] sizes = {32, 64, 128, 256, 512, 1024};
+        int[] sizes = {2};
 
         for(int s : sizes){
             try {
@@ -21,7 +21,7 @@ public class MatrixRandGen {
                     
                         w = new BufferedWriter(new FileWriter(f, true));
                         w.write(s + "\n");
-                        for(int i=0; i<s; i++){
+                        for(int i=0; i<2*s; i++){
                             for(int j=0; j<s; j++){
                                 w.write(ThreadLocalRandom.current().nextInt(min, max + 1) + " ");
                             }

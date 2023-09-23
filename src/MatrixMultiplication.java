@@ -4,7 +4,7 @@ import java.io.FileNotFoundException;
 
 public class MatrixMultiplication {
     public static void main(String[] args){
-        testFile(new File("../test/1.txt"));
+  
     }
 
     public static void testFile(File f){
@@ -42,6 +42,8 @@ public class MatrixMultiplication {
                 System.out.println("Strassen:\n" + c2);
 
             }
+
+            System.out.println("Checked " + f);
             
         } catch(FileNotFoundException ex){
             System.out.println("Error: File not found");
@@ -51,8 +53,9 @@ public class MatrixMultiplication {
     public static void testDirectory(File dir){
         File[] directoryListing = dir.listFiles();
         if(directoryListing != null){
-            for(File child : directoryListing){
-                testDirectory(child);
+            for(int i=1; i<directoryListing.length; i++){
+                System.out.println(directoryListing[i]);
+                testDirectory(directoryListing[i]);
             }
         }
         else
