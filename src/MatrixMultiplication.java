@@ -1,6 +1,7 @@
 import java.io.File;
 import java.util.Scanner;
 import java.io.FileNotFoundException;
+import java.lang.Math;
 
 public class MatrixMultiplication {
 
@@ -18,78 +19,80 @@ public class MatrixMultiplication {
         //     testFile(new File(in.next()));
         // }
 
-        int[] sizes = {1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024};
-
-        for(int size : sizes){
-            System.out.println("Size: " + size + "x" + size);
-            testPerformance(new File("../test/" + size + "x" + size + "/all1s.txt"));
-        }
+        performanceEval();
 
     }
 
-    public static void testPerformance(File f){
+    public static void performanceEval(){
+
+
+        int dAdds = 0;
+        int dMults = 0;
+        int sAdds = 0;
+        int sMults = 0;
+
+        System.out.println(" k    n      + (D)      * (D)    Tot (D)      + (S)     * (S)    Tot (S)");
+
         try {
-            Scanner in = new Scanner(f);
-        
-            int size = in.nextInt();
+            for(int k=0; k<=10; k++){
 
-            Matrix a = new Matrix(size);
-            for(int i=0; i<size; i++){
-                for(int j=0; j<size; j++){
-                    a.set(i, j, in.nextInt());
-                }
-            }
+                int size =  ((Double) Math.pow(2, k)).intValue();
 
-            Matrix b = new Matrix(size);
-            for(int i=0; i<size; i++){
-                for(int j=0; j<size; j++){
-                    b.set(i, j, in.nextInt());
-                }
-            }
+                File f = new File("../test/" + size + "x" + size + "/all1s.txt");
 
-            in.close();
-
-            mults = 0;
-            adds = 0;
-            Matrix c1 = multiplyDirect(a, b);
-            System.out.println("Direct: " + adds + " additions, " + mults + " multiplications");
+                Scanner in = new Scanner(f);
             
-            mults = 0;
-            adds = 0;
-            Matrix c2 = multiplyStrassen(a, b);
-            System.out.println("Strassen: " + adds + " additions, " + mults + " multiplications");
+                in.nextInt();
 
-            try {
-                assert(c1.equals(c2));
+                Matrix a = new Matrix(size);
+                for(int i=0; i<size; i++){
+                    for(int j=0; j<size; j++){
+                        a.set(i, j, in.nextInt());
+                    }
+                }
+
+                Matrix b = new Matrix(size);
+                for(int i=0; i<size; i++){
+                    for(int j=0; j<size; j++){
+                        b.set(i, j, in.nextInt());
+                    }
+                }
+
+                in.close();
+
+                mults = 0;
+                adds = 0;
+                Matrix c1 = multiplyDirect(a, b);
+                dAdds = adds;
+                dMults = mults;
+
+                mults = 0;
+                adds = 0;
+                Matrix c2 = multiplyStrassen(a, b);
+                sAdds = adds;
+                sMults = mults;
+
+                try {
+                    assert(c1.equals(c2));
 
 
 
-            } catch(AssertionError ae) {
-                System.out.println("Error: Strassen incorrect for...");
-                System.out.println("A:\n" + a);
-                System.out.println("B:\n" + b);
-                System.out.println("Direct:\n" + c1);
-                System.out.println("Strassen:\n" + c2);
+                } catch(AssertionError ae) {
+                    System.out.println("Error: Strassen incorrect for...");
+                    System.out.println("A:\n" + a);
+                    System.out.println("B:\n" + b);
+                    System.out.println("Direct:\n" + c1);
+                    System.out.println("Strassen:\n" + c2);
+
+                }
+
+                System.out.printf("%2d%5d%11d%11d%11d%11d%10d%11d\n", k, size, dAdds, dMults, dAdds+dMults, sAdds, sMults, sAdds+sMults);
 
             }
-
-            // System.out.println("Checked " + f);
             
         } catch(FileNotFoundException ex){
             System.out.println("Error: File not found");
         }
-    }
-
-    public static void testDirectory(File dir){
-        File[] directoryListing = dir.listFiles();
-        if(directoryListing != null){
-            for(int i=1; i<directoryListing.length; i++){
-                System.out.println(directoryListing[i]);
-                testDirectory(directoryListing[i]);
-            }
-        }
-        else
-            testPerformance(dir);
     }
 
     public static Matrix add(Matrix a, Matrix b){
