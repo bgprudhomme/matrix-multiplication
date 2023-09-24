@@ -8,24 +8,14 @@ public class MatrixMultiplication {
     public static int mults;
     public static int adds;
     public static void main(String[] args){
-        // System.out.print("Input: (T)ype or get from (F)ile? ");
-        // Scanner in = new Scanner(System.in);
 
-        // if(in.next().charAt(0) == 'T') {
+        //performanceEvalOperations();
 
-        // }
-        // else {
-        //     System.out.print("Pathname: ");
-        //     testFile(new File(in.next()));
-        // }
-
-        performanceEval();
+        performanceEvalRuntime();
 
     }
 
-    public static void performanceEval(){
-
-
+    public static void performanceEvalOperations(){
         int dAdds = 0;
         int dMults = 0;
         int sAdds = 0;
@@ -87,6 +77,69 @@ public class MatrixMultiplication {
                 }
 
                 System.out.printf("%2d%5d%11d%11d%11d%11d%10d%11d\n", k, size, dAdds, dMults, dAdds+dMults, sAdds, sMults, sAdds+sMults);
+
+            }
+            
+        } catch(FileNotFoundException ex){
+            System.out.println("Error: File not found");
+        }
+    }
+
+    public static void performanceEvalRuntime(){
+        long dStart, dEnd, sStart, sEnd;
+
+        System.out.println(" k    n      ms (D)      ms (S)");
+
+        try {
+            for(int k=0; k<=10; k++){
+
+                int size =  ((Double) Math.pow(2, k)).intValue();
+
+                File f = new File("../test/" + size + "x" + size + "/all1s.txt");
+
+                Scanner in = new Scanner(f);
+            
+                in.nextInt();
+
+                Matrix a = new Matrix(size);
+                for(int i=0; i<size; i++){
+                    for(int j=0; j<size; j++){
+                        a.set(i, j, in.nextInt());
+                    }
+                }
+
+                Matrix b = new Matrix(size);
+                for(int i=0; i<size; i++){
+                    for(int j=0; j<size; j++){
+                        b.set(i, j, in.nextInt());
+                    }
+                }
+
+                in.close();
+
+                dStart = System.currentTimeMillis();
+                Matrix c1 = multiplyDirect(a, b);
+                dEnd = System.currentTimeMillis();
+
+                sStart = System.currentTimeMillis();
+                Matrix c2 = multiplyStrassen(a, b);
+                sEnd = System.currentTimeMillis();
+
+                try {
+                    assert(c1.equals(c2));
+
+
+
+                } catch(AssertionError ae) {
+                    System.out.println("Error: Strassen incorrect for...");
+                    System.out.println("A:\n" + a);
+                    System.out.println("B:\n" + b);
+                    System.out.println("Direct:\n" + c1);
+                    System.out.println("Strassen:\n" + c2);
+
+                }
+
+                System.out.printf("%2d%5d%11d%11d\n", k, size, dEnd-dStart, sEnd-sStart);
 
             }
             
