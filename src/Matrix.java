@@ -77,6 +77,22 @@ public class Matrix {
         ((ArrayList<Integer>) entries.get(row)).set(col, get(row, col) + add);
     }
 
+    public void addMatrix(Matrix other){
+        for(int i=0; i<this.rows(); i++){
+            for(int j=0; j<this.cols(); j++){
+                this.add(i, j, other.get(i, j));
+            }
+        }
+    }
+
+    public void subtractMatrix(Matrix other){
+        for(int i=0; i<this.rows(); i++){
+            for(int j=0; j<this.cols(); j++){
+                this.add(i, j, -other.get(i, j));
+            }
+        }
+    }
+
     public Matrix partition(int startRow, int endRow, int startCol, int endCol){
         Matrix result = new Matrix(endRow-startRow, endCol-startCol);
         for(int i=0; i<endRow-startRow; i++){
@@ -103,7 +119,7 @@ public class Matrix {
         String result = "";
         for(int i=0; i<rows; i++){
             for(int j=0; j<cols; j++){
-                result += ((ArrayList<Integer>) entries.get(i)).get(j) + " ";
+                result += ((ArrayList<Integer>) entries.get(i)).get(j) + "\t";
             }
             result += "\n";
         }
