@@ -8,26 +8,34 @@ import java.lang.Math;
 
 public class MatrixMultiplication {
 
-    public static int mults;
-    public static int adds;
+    public static long mults;
+    public static long adds;
     public static void main(String[] args){
 
-        takeInputFromTerminal();
+        // takeInputFromTerminal();
 
-        // takeInputFromFile(new File("../test/16x16/1.txt"));
+        // takeInputFromFile();
 
-        // performanceEvalOperations();
+        performanceEvalOperations();
 
         // performanceEvalRuntime();
 
+        // correctnessTest();
     }
 
     public static void takeInputFromTerminal(){
-        System.out.println("Input:");
-        multiplyAndPrint(new Scanner(System.in));
+        Scanner in = new Scanner(System.in);
+        while(true){
+            System.out.println("Input:");
+            multiplyAndPrint(in);
+        }
     }
 
-    public static void takeInputFromFile(File f){
+    public static void takeInputFromFile(){
+        System.out.print("File: ");
+        Scanner in = new Scanner(System.in);
+        File f = new File(in.nextLine());
+        in.close();
         try {
             multiplyAndPrint(new Scanner(f));
         } catch(FileNotFoundException e ){e.printStackTrace();}
@@ -51,188 +59,201 @@ public class MatrixMultiplication {
             }
         }
 
-        in.close();
-
-        System.out.println("Direct:");
-        Matrix c = multiplyDirect(a, b);
-
-        if(size <= 16)
-            System.out.println(c + "=\n" + a + "*\n" + b);
-        else {
-            try {
-                BufferedWriter w = new BufferedWriter(new FileWriter(new File("../out.txt"), true));
-                w.write(c.toString());
-                w.close();
-
-            } catch(IOException e){e.printStackTrace();}
-        }
-
-        System.out.println("Strassen:");
-        c = multiplyStrassen(a, b);
-
-        if(size <= 16)
-            System.out.println(c + "=\n" + a + "*\n" + b);
-        else {
-            try {
-                BufferedWriter w = new BufferedWriter(new FileWriter(new File("../out.txt"), true));
-                w.write(c.toString());
-                w.close();
-
-            } catch(IOException e){e.printStackTrace();}
-        }
-
-        System.out.println("Hybrid:");
-        c = multiplyHybrid(a, b, 1024);
-
-        if(size <= 16)
-            System.out.println(c + "=\n" + a + "*\n" + b);
-        else {
-            try {
-                BufferedWriter w = new BufferedWriter(new FileWriter(new File("../out.txt"), true));
-                w.write(c.toString());
-                w.close();
-
-            } catch(IOException e){e.printStackTrace();}
+        Matrix c1 = multiplyDirect(a, b);
+        Matrix c2 = multiplyStrassen(a, b);
+        Matrix c3 = multiplyHybrid(a, b, 1024);
+        try {
+            assert(c1.equals(c2) && c1.equals(c3));
+            if(size <= 16)
+                System.out.println(c1 + "=\n" + a + "*\n" + b);
+            else {
+                try {
+                    BufferedWriter w = new BufferedWriter(new FileWriter(new File("../out.txt"), false));
+                    w.write(c1.toString());
+                    w.close();
+                    System.out.println("Multiplication output in ../out.txt");
+                } catch(IOException e){e.printStackTrace();}
+            }
+        } catch(AssertionError ae){
+            System.out.println("Error: Inconsistent results for...");
+            System.out.println("A:\n" + a);
+            System.out.println("B:\n" + b);
+            System.out.println("Direct:\n" + c1);
+            System.out.println("Strassen:\n" + c2);
+            System.out.println("Hybrid:\n");
         }
     }
 
     public static void performanceEvalOperations(){
-        int dAdds = 0;
-        int dMults = 0;
-        int sAdds = 0;
-        int sMults = 0;
-        int hAdds = 0;
-        int hMults = 0;
+        long dAdds = 0;
+        long dMults = 0;
+        long sAdds = 0;
+        long sMults = 0;
+        long hAdds = 0;
+        long hMults = 0;
 
-        System.out.println(" k    n      + (D)      * (D)    Tot (D)      + (S)      * (S)    Tot (S)      + (H)      * (H)    Tot (H)");
+        System.out.println(" k    n       + (D)       * (D)     Tot (D)       + (S)       * (S)     Tot (S)       + (H)       * (H)     Tot (H)");
 
-        // try {
-            for(int k=0; k<=20; k++){
+        for(int k=0; k<=11; k++){ // On my machine, OutOfMemoryError occurs for k>=12
 
-                int size =  ((Double) Math.pow(2, k)).intValue();
+            int size = (int) Math.pow(2, k);
 
-                // File f = new File("../test/" + size + "x" + size + "/all1s.txt");
-
-                //Scanner in = new Scanner(f);
-            
-                //in.nextInt();
-
-                Matrix a = new Matrix(size);
-                for(int i=0; i<size; i++){
-                    for(int j=0; j<size; j++){
-                        a.set(i, j, 1);
-                    }
+            Matrix a = new Matrix(size);
+            for(int i=0; i<size; i++){
+                for(int j=0; j<size; j++){
+                    a.set(i, j, 1);
                 }
+            }
 
-                Matrix b = new Matrix(size);
-                for(int i=0; i<size; i++){
-                    for(int j=0; j<size; j++){
-                        b.set(i, j, 1);
-                    }
+            Matrix b = new Matrix(size);
+            for(int i=0; i<size; i++){
+                for(int j=0; j<size; j++){
+                    b.set(i, j, 1);
                 }
+            }
 
-                // in.close();
+            mults = 0;
+            adds = 0;
+            Matrix c1 = multiplyDirect(a, b);
+            dAdds = adds;
+            dMults = mults;
 
-                mults = 0;
-                adds = 0;
-                Matrix c1 = multiplyDirect(a, b);
-                dAdds = adds;
-                dMults = mults;
+            mults = 0;
+            adds = 0;
+            Matrix c2 = multiplyStrassen(a, b);
+            sAdds = adds;
+            sMults = mults;
 
-                mults = 0;
-                adds = 0;
-                Matrix c2 = multiplyStrassen(a, b);
-                sAdds = adds;
-                sMults = mults;
+            mults = 0;
+            adds = 0;
+            Matrix c3 = multiplyHybrid(a, b, 1024);
+            hAdds = adds;
+            hMults = mults;
 
-                mults = 0;
-                adds = 0;
-                Matrix c3 = multiplyHybrid(a, b, 1024);
-                hAdds = adds;
-                hMults = mults;
-
-                try {
-                    assert(c1.equals(c2) && c1.equals(c3));
-                } catch(AssertionError ae) {
-                    System.out.println("Error: Inconsistent results for...");
-                    System.out.println("A:\n" + a);
-                    System.out.println("B:\n" + b);
-                    System.out.println("Direct:\n" + c1);
-                    System.out.println("Strassen:\n" + c2);
-                    System.out.println("Hybrid:\n");
-
-                }
-
-                System.out.printf("%2d%5d%11d%11d%11d%11d%11d%11d%11d%11d%11d\n", k, size, dAdds, dMults, dAdds+dMults, sAdds, sMults, sAdds+sMults, hAdds, hMults, hAdds+hMults);
+            try {
+                assert(c1.equals(c2) && c1.equals(c3));
+            } catch(AssertionError ae) {
+                System.out.println("Error: Inconsistent results for...");
+                System.out.println("A:\n" + a);
+                System.out.println("B:\n" + b);
+                System.out.println("Direct:\n" + c1);
+                System.out.println("Strassen:\n" + c2);
+                System.out.println("Hybrid:\n");
 
             }
-            
-        // } catch(FileNotFoundException ex){
-        //     System.out.println("Error: File not found");
-        // }
+
+            System.out.printf("%2d%5d%12d%12d%12d%12d%12d%12d%12d%12d%12d\n", k, size, dAdds, dMults, dAdds+dMults, sAdds, sMults, sAdds+sMults, hAdds, hMults, hAdds+hMults);
+
+        }
     }
 
     public static void performanceEvalRuntime(){
-        long dStart, dEnd, sStart, sEnd;
+        long dStart, dEnd, sStart, sEnd, hStart, hEnd;
 
-        System.out.println(" k    n      ms (D)    ms (S)");
+        System.out.println(" k    n      ms (D)    ms (S)    ms(H)");
 
-        // try {
-            for(int k=0; k<=20; k++){
+        for(int k=0; k<=20; k++){
 
-                int size =  ((Double) Math.pow(2, k)).intValue();
+            int size = (int) Math.pow(2, k);
 
-                // File f = new File("../test/" + size + "x" + size + "/all1s.txt");
+            Matrix a = new Matrix(size);
+            for(int i=0; i<size; i++){
+                for(int j=0; j<size; j++){
+                    a.set(i, j, 1);
+                }
+            }
 
-                // Scanner in = new Scanner(f);
-            
-                // in.nextInt();
+            Matrix b = new Matrix(size);
+            for(int i=0; i<size; i++){
+                for(int j=0; j<size; j++){
+                    b.set(i, j, 1);
+                }
+            }
 
-                Matrix a = new Matrix(size);
+            Matrix c = new Matrix(size);
+            for(int i=0; i<size; i++){
+                for(int j=0; j<size; j++){
+                    b.set(i, j, 1);
+                }
+            }
+
+            dStart = System.currentTimeMillis();
+            Matrix c1 = multiplyDirect(a, b);
+            dEnd = System.currentTimeMillis();
+
+            sStart = System.currentTimeMillis();
+            Matrix c2 = multiplyStrassen(a, b);
+            sEnd = System.currentTimeMillis();
+
+            hStart = System.currentTimeMillis();
+            Matrix c3 = multiplyHybrid(a, b, 1024);
+            hEnd = System.currentTimeMillis();
+
+            try {
+                assert(c1.equals(c2) && c1.equals(c3));
+            } catch(AssertionError ae) {
+                System.out.println("Error: Strassen incorrect for...");
+                System.out.println("A:\n" + a);
+                System.out.println("B:\n" + b);
+                System.out.println("Direct:\n" + c1);
+                System.out.println("Strassen:\n" + c2);
+
+            }
+
+            System.out.printf("%2d%5d%11d%11d%9d\n", k, size, dEnd-dStart, sEnd-sStart, hEnd-hStart);
+
+        }
+    }
+
+    public static void correctnessTest(){
+        int size;
+        Matrix a = new Matrix(3);
+        Matrix b = new Matrix(3);
+        Matrix c1 = new Matrix(3);
+        Matrix c2 = new Matrix(3);
+        Matrix c3 = new Matrix(3);
+        try {
+            for(size=3; size<=20; size++){
+                a = new Matrix(size);
                 for(int i=0; i<size; i++){
                     for(int j=0; j<size; j++){
                         a.set(i, j, 1);
                     }
                 }
 
-                Matrix b = new Matrix(size);
+                b = new Matrix(size);
                 for(int i=0; i<size; i++){
                     for(int j=0; j<size; j++){
                         b.set(i, j, 1);
                     }
                 }
 
-                // in.close();
+                mults = 0;
+                adds = 0;
+                c1 = multiplyDirect(a, b);
 
-                dStart = System.currentTimeMillis();
-                Matrix c1 = multiplyDirect(a, b);
-                dEnd = System.currentTimeMillis();
+                mults = 0;
+                adds = 0;
+                c2 = multiplyStrassen(a, b);
 
-                sStart = System.currentTimeMillis();
-                Matrix c2 = multiplyStrassen(a, b);
-                sEnd = System.currentTimeMillis();
+                mults = 0;
+                adds = 0;
+                c3 = multiplyHybrid(a, b, 1024);
+                
+                assert(c1.equals(c2) && c1.equals(c3));
 
-                try {
-                    assert(c1.equals(c2));
-
-
-
-                } catch(AssertionError ae) {
-                    System.out.println("Error: Strassen incorrect for...");
-                    System.out.println("A:\n" + a);
-                    System.out.println("B:\n" + b);
-                    System.out.println("Direct:\n" + c1);
-                    System.out.println("Strassen:\n" + c2);
-
-                }
-
-                System.out.printf("%2d%5d%11d%11d\n", k, size, dEnd-dStart, sEnd-sStart);
-
+                System.out.println(c1.equals(c2) && c1.equals(c3));
             }
-            
-        // } catch(FileNotFoundException ex){
-        //     System.out.println("Error: File not found");
-        // }
+            System.out.println("All algorithms correct up to 20x20");
+        } catch(AssertionError ae){
+            System.out.println("Error: Inconsistent results for...");
+            System.out.println("A:\n" + a);
+            System.out.println("B:\n" + b);
+            System.out.println("Direct:\n" + c1);
+            System.out.println("Strassen:\n" + c2);
+            System.out.println("Hybrid:\n" + c3);
+
+        }
     }
 
     public static Matrix add(Matrix a, Matrix b){
@@ -258,18 +279,17 @@ public class MatrixMultiplication {
     }
 
     public static Matrix multiplyDirect(Matrix a, Matrix b){
-        long startTime = System.currentTimeMillis();
-        Matrix c = new Matrix(a.rows(), b.cols());
-        for(int i=0; i<a.rows(); i++){
-            for(int j=0; j<b.cols(); j++){
+        int size = a.rows();
+        
+        Matrix c = new Matrix(size);
+        for(int i=0; i<size; i++){
+            for(int j=0; j<size; j++){
                     c.set(i, j, a.get(i, 0)*b.get(0, j));
                     mults++;
-                    // System.out.println("(" + i + ", " + j + ", 0): " + (System.currentTimeMillis()-startTime));
-                for(int k=1; k<a.cols(); k++){
+                for(int k=1; k<size; k++){
                     c.add(i, j, a.get(i, k)*b.get(k, j));
                     adds++;
                     mults++;
-                    // System.out.println("(" + i + ", " + j + ", " + k + "): " + (System.currentTimeMillis()-startTime));
                 }
             }
         }
@@ -277,8 +297,15 @@ public class MatrixMultiplication {
     }
 
     public static Matrix multiplyStrassen(Matrix a, Matrix b){
-        // long startTime = System.currentTimeMillis();
-        // long step1Time = 0, step2Time = 0, step3Time = 0, step4Time = 0;
+        int size = a.rows();
+        int nextPowerOf2 = 1;
+        while(nextPowerOf2 < size){
+            nextPowerOf2 *= 2;
+        }
+        if(size != nextPowerOf2){;
+            a = new Matrix(a, new Matrix(size, nextPowerOf2-size), new Matrix(nextPowerOf2-size, size), new Matrix(nextPowerOf2-size, nextPowerOf2-size));
+            b = new Matrix(b, new Matrix(size, nextPowerOf2-size), new Matrix(nextPowerOf2-size, size), new Matrix(nextPowerOf2-size, nextPowerOf2-size));
+        }
         Matrix c;
         if(a.rows() == 1){
             c = new Matrix(1);
@@ -296,8 +323,6 @@ public class MatrixMultiplication {
             Matrix b21 = b.partition(b.rows()/2, b.rows(), 0, b.cols()/2);
             Matrix b22 = b.partition(b.rows()/2, b.rows(), b.cols()/2, b.cols());
 
-            // step1Time = System.currentTimeMillis()-startTime;
-
             // Step 2
             Matrix s1 = subtract(b12, b22);
             Matrix s2 = add(a11, a12);
@@ -310,8 +335,6 @@ public class MatrixMultiplication {
             Matrix s9 = subtract(a11, a21);
             Matrix s10 = add(b11, b12);
 
-            // step2Time = System.currentTimeMillis()-startTime;
-
             // Step 3
             Matrix p1 = multiplyStrassen(a11, s1);
             Matrix p2 = multiplyStrassen(s2, b22);
@@ -321,15 +344,11 @@ public class MatrixMultiplication {
             Matrix p6 = multiplyStrassen(s7, s8);
             Matrix p7 = multiplyStrassen(s9, s10);
 
-            // step3Time = System.currentTimeMillis()-startTime;
-
             // Step 4
             c = new Matrix(add(subtract(add(p5, p4), p2), p6), add(p1, p2), add(p3, p4), subtract(subtract(add(p5, p1), p3), p7));
-            // step4Time = System.currentTimeMillis()-startTime;
+            c = c.partition(0, size, 0, size);
 
         }
-
-        // System.out.println(step1Time + ", " + step2Time + ", " + step3Time + ", " + step4Time);
 
         return c;
 
@@ -342,6 +361,15 @@ public class MatrixMultiplication {
             c = multiplyDirect(a, b);
         }
         else {
+            int nextPowerOf2 = 1;
+            while(nextPowerOf2 < size){
+                nextPowerOf2 *= 2;
+            }
+            if(size != nextPowerOf2){;
+                a = new Matrix(a, new Matrix(size, nextPowerOf2-size), new Matrix(nextPowerOf2-size, size), new Matrix(nextPowerOf2-size, nextPowerOf2-size));
+                b = new Matrix(b, new Matrix(size, nextPowerOf2-size), new Matrix(nextPowerOf2-size, size), new Matrix(nextPowerOf2-size, nextPowerOf2-size));
+            }
+
             // Step 1
             Matrix a11 = a.partition(0, a.rows()/2, 0, a.cols()/2);
             Matrix a12 = a.partition(0, a.rows()/2, a.cols()/2, a.cols());
@@ -351,8 +379,6 @@ public class MatrixMultiplication {
             Matrix b12 = b.partition(0, b.rows()/2, b.cols()/2, b.cols());
             Matrix b21 = b.partition(b.rows()/2, b.rows(), 0, b.cols()/2);
             Matrix b22 = b.partition(b.rows()/2, b.rows(), b.cols()/2, b.cols());
-
-            // step1Time = System.currentTimeMillis()-startTime;
 
             // Step 2
             Matrix s1 = subtract(b12, b22);
@@ -366,8 +392,6 @@ public class MatrixMultiplication {
             Matrix s9 = subtract(a11, a21);
             Matrix s10 = add(b11, b12);
 
-            // step2Time = System.currentTimeMillis()-startTime;
-
             // Step 3
             Matrix p1 = multiplyHybrid(a11, s1, switchThreshold);
             Matrix p2 = multiplyHybrid(s2, b22, switchThreshold);
@@ -377,10 +401,9 @@ public class MatrixMultiplication {
             Matrix p6 = multiplyHybrid(s7, s8, switchThreshold);
             Matrix p7 = multiplyHybrid(s9, s10, switchThreshold);
 
-            // step3Time = System.currentTimeMillis()-startTime;
-
             // Step 4
             c = new Matrix(add(subtract(add(p5, p4), p2), p6), add(p1, p2), add(p3, p4), subtract(subtract(add(p5, p1), p3), p7));
+            c = c.partition(0, size, 0, size);
         }
         return c;
     }

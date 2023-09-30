@@ -2,7 +2,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.File;
 import java.io.IOException;
-import java.util.concurrent.ThreadLocalRandom;
+// import java.util.concurrent.ThreadLocalRandom;
 
 public class MatrixRandGen {
     public static void main(String[] args) {
@@ -11,26 +11,27 @@ public class MatrixRandGen {
         int min = -100;
         int max = 100;
 
-        int[] sizes = {2, 4, 8, 16, 32, 64, 128, 256, 512, 1024};
+        int maxK = 10;
 
-        for(int s : sizes){
+        for(int k = 0; k<= maxK; k++){
             try {
+                int s = 3 * (int) Math.pow(2, k-1);
                 System.out.println("Size: " + s + "x" + s);
-                for(int x=0; x<10; x++){
-                    f = new File("../test/" + s + "x" + s + "/" + x + ".txt");
-                    
-                        w = new BufferedWriter(new FileWriter(f, true));
-                        w.write(s + "\n");
-                        for(int i=0; i<2*s; i++){
-                            for(int j=0; j<s; j++){
-                                w.write(ThreadLocalRandom.current().nextInt(min, max + 1) + " ");
-                            }
-                            w.write("\n");
+
+                f = new File("../test/performanceEvalExtra3/" + s + "x" + s + ".txt");
+                
+                    w = new BufferedWriter(new FileWriter(f, true));
+                    w.write(s + "\n");
+                    for(int i=0; i<2*s; i++){
+                        for(int j=0; j<s; j++){
+                            w.write("1 ");
                         }
-                    
-                    System.out.println("File created: ../test/" + s + "x" + s + "/" + x + ".txt");
-                    w.close();
-                }
+                        w.write("\n");
+                    }
+                
+                System.out.println("File created: ../test/performanceEvalExtra3/" + s + "x" + s + ".txt");
+                w.close();
+                
                 
             } catch (IOException e){
                     System.out.println("IOException occurred");

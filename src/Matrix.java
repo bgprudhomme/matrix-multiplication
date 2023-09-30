@@ -10,9 +10,9 @@ public class Matrix {
         this.rows = rows;
         this.cols = cols;
         entries = new ArrayList<ArrayList<Integer>>();
-        for(int i=0; i<rows; i++){
+        for(int i=0; i<this.rows; i++){
             entries.add(new ArrayList<Integer>());
-            for(int j=0; j<cols; j++){
+            for(int j=0; j<this.cols; j++){
                 ((ArrayList<Integer>) entries.get(i)).add(0);
             }
         }
@@ -23,9 +23,9 @@ public class Matrix {
         this.rows = size;
         this.cols = size;
         entries = new ArrayList<ArrayList<Integer>>();
-        for(int i=0; i<rows; i++){
+        for(int i=0; i<this.rows; i++){
             entries.add(new ArrayList<Integer>());
-            for(int j=0; j<cols; j++){
+            for(int j=0; j<this.cols; j++){
                 ((ArrayList<Integer>) entries.get(i)).add(0);
             }
         }
@@ -35,6 +35,7 @@ public class Matrix {
     public Matrix (Matrix c11, Matrix c12, Matrix c21, Matrix c22) {
         this.rows = c11.rows() + c21.rows();
         this.cols = c11.cols() + c12.cols();
+        
         entries = new ArrayList<ArrayList<Integer>>();
 
         for(int i=0; i<c11.rows(); i++){
@@ -62,7 +63,7 @@ public class Matrix {
     }
 
     public int cols(){
-        return rows;
+        return cols;
     }
 
     public int get(int row, int col){
