@@ -16,9 +16,19 @@ public class MatrixMultiplication {
 
         // takeInputFromFile();
 
-        performanceEvalOperations();
+        // performanceEvalOperations();
 
         // performanceEvalRuntime();
+
+        // performanceEvalNewExtra();
+
+        // System.out.println("Formula: n = 2^k + 1");
+
+        // performanceEvalExtra2(1);
+
+        System.out.println("Formula: n = 2^(k+1) - 1");
+
+        performanceEvalExtra2(2);
 
         // correctnessTest();
     }
@@ -61,7 +71,7 @@ public class MatrixMultiplication {
 
         Matrix c1 = multiplyDirect(a, b);
         Matrix c2 = multiplyStrassen(a, b);
-        Matrix c3 = multiplyHybrid(a, b, 1024);
+        Matrix c3 = multiplyHybrid(a, b, 8);
         try {
             assert(c1.equals(c2) && c1.equals(c3));
             if(size <= 16)
@@ -126,7 +136,7 @@ public class MatrixMultiplication {
 
             mults = 0;
             adds = 0;
-            Matrix c3 = multiplyHybrid(a, b, 1024);
+            Matrix c3 = multiplyHybrid(a, b, 8);
             hAdds = adds;
             hMults = mults;
 
@@ -186,7 +196,7 @@ public class MatrixMultiplication {
             sEnd = System.currentTimeMillis();
 
             hStart = System.currentTimeMillis();
-            Matrix c3 = multiplyHybrid(a, b, 1024);
+            Matrix c3 = multiplyHybrid(a, b, 8);
             hEnd = System.currentTimeMillis();
 
             try {
@@ -201,6 +211,113 @@ public class MatrixMultiplication {
             }
 
             System.out.printf("%2d%5d%11d%11d%9d\n", k, size, dEnd-dStart, sEnd-sStart, hEnd-hStart);
+
+        }
+    }
+
+    public static void performanceEvalExtra2(int formula){
+        long dAdds = 0;
+        long dMults = 0;
+        long sAdds = 0;
+        long sMults = 0;
+        long hAdds = 0;
+        long hMults = 0;
+
+        System.out.println(" k    n       + (D)       * (D)     Tot (D)       + (S)       * (S)     Tot (S)       + (H)       * (H)     Tot (H)");
+
+        for(int k=0; k<=11; k++){ // On my machine, OutOfMemoryError occurs for k>=12
+            int size;
+            if(formula == 1){
+                size = (int) Math.pow(2, k) + 1;
+            }
+            else if(formula == 2){
+                size = (int) Math.pow(2, k+1) - 1;
+            }
+            else {
+                size = 3 *(int) Math.pow(2, k-1);
+            }
+            
+            Matrix a = new Matrix(size);
+            for(int i=0; i<size; i++){
+                for(int j=0; j<size; j++){
+                    a.set(i, j, 1);
+                }
+            }
+
+            Matrix b = new Matrix(size);
+            for(int i=0; i<size; i++){
+                for(int j=0; j<size; j++){
+                    b.set(i, j, 1);
+                }
+            }
+
+            mults = 0;
+            adds = 0;
+            Matrix c1 = multiplyDirect(a, b);
+            dAdds = adds;
+            dMults = mults;
+
+            mults = 0;
+            adds = 0;
+            Matrix c2 = multiplyStrassen(a, b);
+            sAdds = adds;
+            sMults = mults;
+
+            mults = 0;
+            adds = 0;
+ 
+            Matrix c3 = multiplyHybrid(a, b, 8);
+            hAdds = adds;
+            hMults = mults;
+
+            try {
+                assert(c1.equals(c2) && c1.equals(c3));
+            } catch(AssertionError ae) {
+                System.out.println("Error: Inconsistent results for...");
+                System.out.println("A:\n" + a);
+                System.out.println("B:\n" + b);
+                System.out.println("Direct:\n" + c1);
+                System.out.println("Strassen:\n" + c2);
+                System.out.println("Hybrid:\n");
+
+            }
+
+            System.out.printf("%2d%5d%12d%12d%12d%12d%12d%12d%12d%12d%12d\n", k, size, dAdds, dMults, dAdds+dMults, sAdds, sMults, sAdds+sMults, hAdds, hMults, hAdds+hMults);
+
+        }
+    }
+
+    public static void performanceEvalNewExtra(){
+        long hAdds, hMults;
+        int size = 129;
+
+        System.out.println(" i         Ops");
+
+        for(int k=0; k<=10; k++){
+
+            int threshold = (int) Math.pow(2, k);
+
+            Matrix a = new Matrix(size);
+            for(int i=0; i<size; i++){
+                for(int j=0; j<size; j++){
+                    a.set(i, j, 1);
+                }
+            }
+
+            Matrix b = new Matrix(size);
+            for(int i=0; i<size; i++){
+                for(int j=0; j<size; j++){
+                    b.set(i, j, 1);
+                }
+            }
+
+            mults = 0;
+            adds = 0;
+            Matrix c = multiplyHybrid(a, b, threshold);
+            hAdds = adds;
+            hMults = mults;
+
+            System.out.printf("%2d%12d\n", k, hAdds+hMults);
 
         }
     }
@@ -238,7 +355,7 @@ public class MatrixMultiplication {
 
                 mults = 0;
                 adds = 0;
-                c3 = multiplyHybrid(a, b, 1024);
+                c3 = multiplyHybrid(a, b, 8);
                 
                 assert(c1.equals(c2) && c1.equals(c3));
 
@@ -357,7 +474,7 @@ public class MatrixMultiplication {
     public static Matrix multiplyHybrid(Matrix a, Matrix b, int switchThreshold){
         int size = a.rows();
         Matrix c;
-        if(size < switchThreshold){
+        if(size <= switchThreshold){
             c = multiplyDirect(a, b);
         }
         else {
